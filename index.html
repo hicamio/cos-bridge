@@ -131,6 +131,22 @@ footer{color:var(--muted);font-size:10px;text-align:center;margin:22px 0 8px;lin
 .allclear .big{font-family:var(--ant);font-size:22px;letter-spacing:.14em;color:var(--nom);text-transform:uppercase;text-shadow:0 0 20px rgba(95,214,138,.5)}
 .allclear .sm{color:var(--muted);font-size:12px;margin-top:6px}
 #loading{padding:60px 20px;text-align:center;font-family:var(--ant);letter-spacing:.16em;text-transform:uppercase;color:var(--peach)}
+.addtask{display:flex;gap:7px;margin-bottom:11px}
+.addtask input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--glassline);border-radius:0 12px 12px 0;padding:9px 12px;font:12.5px var(--mono);color:var(--ink);outline:none}
+.addtask input::placeholder{color:var(--muted)}
+.addtask input:focus{border-color:rgba(102,204,204,.5)}
+.addtask button{background:var(--cyan);color:#07231f;border:none;border-radius:0 12px 12px 0;padding:0 15px;font-family:var(--ant);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 14px rgba(102,204,204,.4)}
+.tcard{background:rgba(255,255,255,.04);border:1px solid var(--glassline);border-left:4px solid var(--cyan);border-radius:0 14px 14px 0;padding:11px 13px;margin-bottom:8px}
+.tcard .row1{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px}
+.tcard .chipx{font-family:var(--ant);font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:0 9px 9px 0;padding:2px 8px;color:#07231f}
+.tcard .meta{margin-left:auto;color:var(--muted);font-size:10.5px;font-family:var(--ant)}
+.tcard .tt{font-weight:700;font-size:13px;line-height:1.4}
+.tcard .ta{font-size:11.5px;color:var(--ink2);margin-top:3px}
+.tcard .tn{font-size:11.5px;color:var(--cyan);margin-top:6px;line-height:1.5}
+.tcard .tbtns{display:flex;gap:7px;margin-top:9px}
+.tcard .tb{font-family:var(--ant);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-radius:0 11px 11px 0;padding:6px 12px;cursor:pointer;border:1px solid var(--glassline);background:rgba(255,255,255,.06);color:var(--ink2)}
+.tcard .tb.d{background:rgba(95,214,138,.14);border-color:rgba(95,214,138,.45);color:var(--nom)}
+.tcard .tb.i{background:rgba(255,153,51,.12);border-color:rgba(255,153,51,.4);color:var(--orange)}
 </style>
 </head>
 <body>
@@ -153,6 +169,13 @@ footer{color:var(--muted);font-size:10px;text-align:center;margin:22px 0 8px;lin
   <button class="browsebtn" id="browseBtn" onclick="event.stopPropagation();toggleBrowse()">▦ Browse</button><span class="arr">▶</span></div>
   <div class="shellbody"><div class="browse glass" id="browse"></div><div id="deck"></div><div class="nextup" id="nextup"></div></div>
 </div>
+<div class="shell glass open" id="dTasks">
+  <div class="shellhead" onclick="toggleShell('dTasks')">My Tasks <span class="cnt" id="cTasks"></span><span class="arr">▶</span></div>
+  <div class="shellbody">
+    <div class="addtask"><input id="newTask" placeholder="New task — &quot;get payoff statements from banks, mail checks&quot;"><button onclick="addTask()">＋ Add</button></div>
+    <div id="bTasks"></div>
+  </div>
+</div>
 <div class="shell glass" id="dWait"><div class="shellhead" onclick="toggleShell('dWait')">Waiting On Them <span class="cnt" id="cWait"></span><span class="arr">▶</span></div><div class="shellbody" id="bWait"></div></div>
 <div class="shell glass" id="dCommit"><div class="shellhead" onclick="toggleShell('dCommit')">Meeting Commitments <span class="cnt" id="cCommit"></span><span class="arr">▶</span></div><div class="shellbody" id="bCommit"></div></div>
 <div class="shell glass" id="dLow"><div class="shellhead" onclick="toggleShell('dLow')">Low-Stakes Replies <span class="cnt" id="cLow"></span><span class="arr">▶</span></div><div class="shellbody" id="bLow"></div></div>
@@ -172,7 +195,51 @@ function gmSearch(p){return 'https://mail.google.com/mail/?authuser=marcus@hicam
 function gmThread(t){return 'https://mail.google.com/mail/?authuser=marcus@hicam.io#all/'+t}
 function api(b){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).catch(function(){})}
 
-var allOwe=[],queue=[],LOWQ=[],WAITQ=[],COMQ=[],SNZQ=[],cleared=0,streak=0,lastDone=null;
+var allOwe=[],queue=[],LOWQ=[],WAITQ=[],COMQ=[],SNZQ=[],TASKQ=[],cleared=0,streak=0,lastDone=null;
+
+function taskCard(it){
+  var g=grade(it.hi);
+  return '<div class="tcard"><div class="row1"><span class="chipx" style="background:'+(it.raw?'#8f8a9a':g[1])+'">'+(it.raw?'Enriching tonight':g[0]+' · '+it.hi)+'</span>'+(it.imp==='High'?'<span class="chipx" style="background:var(--peach)">High</span>':'')+'<span class="meta">'+(it.days||0)+'d</span></div>'+
+  '<div class="tt">'+esc(it.item)+'</div>'+
+  (it.ask&&it.ask!==it.item?'<div class="ta">'+esc(it.ask)+'</div>':'')+
+  (it.next?'<div class="tn">→ '+esc(it.next)+'</div>':'')+
+  '<div class="tbtns"><button class="tb d" onclick="taskDone(\''+esc(it.item).replace(/'/g,'')+'\')">✓ Done</button><button class="tb" onclick="taskSnooze(\''+esc(it.item).replace(/'/g,'')+'\')">☾ 3d</button><button class="tb i" onclick="taskInstruct(\''+esc(it.item).replace(/'/g,'')+'\')">⌁ Instruct</button></div></div>';
+}
+function renderTasks(){
+  document.getElementById('bTasks').innerHTML=TASKQ.length?TASKQ.map(taskCard).join(''):'<div style="color:var(--muted);font-size:11px;padding:4px 2px">No tasks — add one above and I\'ll turn it into an action plan.</div>';
+  document.getElementById('cTasks').textContent=TASKQ.length;
+}
+function findTask(t){for(var i=0;i<TASKQ.length;i++){if(TASKQ[i].item.replace(/'/g,'')===t)return i;}return -1;}
+function addTask(){
+  var i=document.getElementById('newTask');
+  var txt=i.value.trim(); if(!txt)return;
+  api({t:'task',text:txt});
+  TASKQ.unshift({item:txt.length>80?txt.slice(0,77)+'…':txt,p:'You',o:'Captured',days:0,hi:25,imp:'Medium',ask:txt,next:'Claude will break this into steps tonight — or Instruct it now',raw:1,tsk:1});
+  renderTasks();
+  showToast('Task logged — enriched into an action plan at the 2am sweep','+2 XP');
+  i.value='';
+}
+function taskDone(t){
+  var idx=findTask(t); if(idx<0)return;
+  var it=TASKQ.splice(idx,1)[0]; cleared++; lastDone=it;
+  api({t:'done',item:it.item});
+  showToast('Task cleared — ledger updated','+10 XP');
+  renderTasks();renderHud();
+}
+function taskSnooze(t){
+  var idx=findTask(t); if(idx<0)return;
+  var it=TASKQ.splice(idx,1)[0]; SNZQ.push(it);
+  api({t:'snooze',item:it.item});
+  showToast('Task snoozed 3 days','');
+  renderTasks();renderDrawers();
+}
+function taskInstruct(t){
+  var idx=findTask(t); if(idx<0)return;
+  var txt=window.prompt('Instruct Claude on: '+TASKQ[idx].item);
+  if(!txt||!txt.trim())return;
+  api({t:'instruct',item:TASKQ[idx].item,text:txt.trim()});
+  showToast('Instruction sent — Claude will act on it','+2 XP');
+}
 
 function renderToday(){
   var cal=DATA.cal||[];
@@ -341,13 +408,16 @@ function boot(){
   WAITQ=(DATA.waiting||[]).slice().sort(function(a,b){return b.hi-a.hi});
   COMQ=(DATA.commit||[]).slice().sort(function(a,b){return b.hi-a.hi});
   SNZQ=(DATA.snoozed||[]).slice();
+  TASKQ=(DATA.tasks||[]).slice();
   cleared=DATA.done_today||0;
   var now=new Date();
   var doy=Math.floor((now-new Date(now.getFullYear(),0,0))/86400000);
   document.getElementById('sd').innerHTML='SD '+now.getFullYear()+'.'+doy+'<br>'+now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
   document.getElementById('loading').style.display='none';
   document.getElementById('app').style.display='';
-  renderToday();renderMissions();renderDeck();renderBrowse();renderDrawers();renderHud();
+  renderToday();renderMissions();renderDeck();renderBrowse();renderDrawers();renderTasks();renderHud();
+  var nt=document.getElementById('newTask');
+  nt&&nt.addEventListener('keydown',function(e){if(e.key==='Enter')addTask()});
 }
 (function init(){
   var tok='';
