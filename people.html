@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>CoS · People Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{--ink:#f2f0ea;--ink2:#b3afbd;--muted:#736f7e;--orange:#FF9933;--peach:#FFCC99;--blue:#7788FF;--cyan:#66CCCC;--lav:#CC99CC;--ra:#ff5a5a;--alert:#ff8a5c;--elev:#ffc266;--nom:#5fd68a;--glass:rgba(22,24,34,.55);--glassline:rgba(255,255,255,.11);--spec:rgba(255,255,255,.22);--ant:'Antonio','Arial Narrow',sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#04050a}
+body{color:var(--ink);font:14px/1.5 var(--mono);padding-bottom:40px;max-width:1000px;margin:0 auto;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(420px 300px at 85% -5%,rgba(255,153,51,.22),transparent 65%),radial-gradient(500px 380px at -10% 25%,rgba(85,102,255,.20),transparent 65%),radial-gradient(420px 360px at 70% 80%,rgba(204,153,204,.13),transparent 65%),#04050a}
+.glass{background:var(--glass);backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);border:1px solid var(--glassline);border-top-color:var(--spec)}
+.topband{display:flex;align-items:stretch;gap:6px;padding:14px 14px 0}
+.elbow{width:64px;background:var(--orange);border-radius:0 0 0 34px;min-height:52px;box-shadow:0 0 24px rgba(255,153,51,.35)}
+.topbar{flex:1;border-radius:0 26px 26px 0;display:flex;align-items:center;padding:0 18px;gap:12px;background:rgba(255,153,51,.13);backdrop-filter:blur(26px) saturate(1.5);border:1px solid rgba(255,153,51,.35);border-top-color:rgba(255,204,153,.5)}
+.topbar h1{font-family:var(--ant);font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);text-shadow:0 0 16px rgba(255,153,51,.5)}
+.topbar a{margin-left:auto;font-family:var(--ant);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);text-decoration:none;border:1px solid rgba(119,136,255,.45);border-radius:0 12px 12px 0;padding:5px 12px;background:rgba(119,136,255,.12)}
+#loading{padding:60px 20px;text-align:center;font-family:var(--ant);letter-spacing:.16em;text-transform:uppercase;color:var(--peach)}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 0}
+.stat{border-radius:10px;padding:10px 6px;text-align:center}
+.stat .v{font-family:var(--ant);font-weight:700;font-size:24px;line-height:1.1}
+.stat .l{font-family:var(--ant);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.shead{font-family:var(--ant);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--peach);display:flex;align-items:center;gap:8px;margin:18px 16px 10px}
+.shead::before{content:'';width:26px;height:12px;background:var(--orange);border-radius:0 8px 8px 0;box-shadow:0 0 12px rgba(255,153,51,.5)}
+.shead .r{margin-left:auto;font-size:9.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.pcard{border-radius:0 16px 16px 0;border-left:4px solid var(--muted);padding:12px 14px}
+.pcard .top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pname{font-family:var(--ant);font-weight:700;font-size:16px;letter-spacing:.05em;text-transform:uppercase}
+.porg{font-family:var(--ant);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--peach);opacity:.8}
+.pmeta{margin-left:auto;text-align:right;font-family:var(--ant);font-size:10px;color:var(--muted);letter-spacing:.08em;white-space:nowrap}
+.pmeta b{font-size:15px;line-height:1}
+.items{margin-top:8px}
+.irow{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12px;line-height:1.4;border-top:1px solid rgba(255,255,255,.05)}
+.irow:first-child{border-top:none}
+.irow .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.irow .d{color:var(--muted);font-family:var(--ant);font-size:10px;margin-left:auto;white-space:nowrap;padding-top:2px}
+.pbtns{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.pb{font-family:var(--ant);font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:0 11px 11px 0;padding:5px 11px;cursor:pointer;border:1px solid var(--glassline);background:rgba(255,255,255,.06);color:var(--ink2);text-decoration:none}
+.pb.mail{border-color:rgba(119,136,255,.45);color:var(--blue);background:rgba(119,136,255,.1)}
+.pb.tch{border-color:rgba(102,204,204,.45);color:var(--cyan);background:rgba(102,204,204,.1)}
+.qctx{font-size:11.5px;color:var(--ink2);margin-top:6px;line-height:1.45}
+.qtouch{font-size:11.5px;color:var(--cyan);margin-top:4px}
+.tierchip{font-family:var(--ant);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:0 9px 9px 0;padding:2px 8px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(16,17,26,.9);backdrop-filter:blur(20px);border:1px solid rgba(255,204,153,.35);color:var(--peach);border-radius:0 16px 16px 0;padding:10px 18px;font-family:var(--ant);letter-spacing:.08em;font-size:12.5px;display:none;box-shadow:0 12px 40px rgba(0,0,0,.6);max-width:92vw}
+footer{color:var(--muted);font-size:10px;text-align:center;margin:26px 0 8px;line-height:1.7;padding:0 16px}
+</style>
+</head>
+<body>
+<div class="topband"><div class="elbow"></div><div class="topbar"><h1>People Tracker</h1><a id="toBridge" href="#">◈ Bridge</a></div></div>
+<div id="loading">Establishing uplink…</div>
+<div id="app" style="display:none">
+  <div class="statrow">
+    <div class="stat glass"><div class="v" style="color:var(--ra)" id="sOwed">0</div><div class="l">People owed</div></div>
+    <div class="stat glass"><div class="v" style="color:var(--elev)" id="sQuiet">0</div><div class="l">Going quiet</div></div>
+    <div class="stat glass"><div class="v" style="color:var(--cyan)" id="sTotal">0</div><div class="l">Open items</div></div>
+  </div>
+  <div class="shead">You Owe People <span class="r">ranked by total heat · every card visible</span></div>
+  <div class="grid" id="gOwe"></div>
+  <div class="shead">Going Quiet <span class="r">no open ask — relationships decaying silently</span></div>
+  <div class="grid" id="gQuiet"></div>
+</div>
+<div class="toast" id="toast"></div>
+<footer>People Tracker · same ledger as the Bridge · re-triaged over the last 60 days<br>✉ opens the thread · ⌁ Touch queues Claude to draft the re-engagement</footer>
+<script>
+var API_BASE='https://lrnhgmzttkketqurjylj.supabase.co/functions/v1/cos-dashboard/';
+var API='',DATA=null;
+var CRA='#ff5a5a',CAL='#ff8a5c',CEL='#ffc266',CNO='#5fd68a';
+function gcol(hi){return hi>=75?CRA:hi>=55?CAL:hi>=30?CEL:CNO}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function gm(t,p){return t?'https://mail.google.com/mail/?authuser=marcus@hicam.io#all/'+t:'https://mail.google.com/mail/?authuser=marcus@hicam.io#search/'+encodeURIComponent('"'+p+'"')}
+function api(b){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).catch(function(){})}
+var toastTimer;
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.style.display='none'},3200)}
+function touch(person){api({t:'touch',person:person});toast('Queued — Claude drafts the re-engagement tonight')}
+function normPerson(p){return (p||'').split('·')[0].trim()}
+function build(){
+  var all=[].concat(DATA.owe||[],DATA.waiting||[],DATA.commit||[]);
+  var map={};
+  for(var i=0;i<all.length;i++){var it=all[i];var k=normPerson(it.p);if(!k||k==='You')continue;
+    if(!map[k])map[k]={person:k,org:it.o||'',items:[],heat:0,maxHi:0,minDays:999,thread:it.thread};
+    map[k].items.push(it);map[k].heat+=it.hi;if(it.hi>map[k].maxHi)map[k].maxHi=it.hi;
+    if(it.days<map[k].minDays)map[k].minDays=it.days;if(it.thread&&!map[k].thread)map[k].thread=it.thread;}
+  var people=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return b.heat-a.heat});
+  var h='';
+  for(var i=0;i<people.length;i++){var P=people[i];var c=gcol(P.maxHi);
+    h+='<div class="pcard glass" style="border-left-color:'+c+'">';
+    h+='<div class="top"><span class="pname">'+esc(P.person)+'</span><span class="porg">'+esc(P.org)+'</span><span class="pmeta"><b style="color:'+c+'">'+P.items.length+'</b> open<br>heat '+P.heat+'</span></div>';
+    h+='<div class="items">';
+    var its=P.items.slice().sort(function(a,b){return b.hi-a.hi});
+    for(var j=0;j<its.length;j++){var it=its[j];
+      h+='<div class="irow"><span class="dot" style="background:'+gcol(it.hi)+';box-shadow:0 0 7px '+gcol(it.hi)+'"></span><span>'+esc(it.item)+'</span><span class="d">'+it.days+'d</span></div>';}
+    h+='</div><div class="pbtns">';
+    h+='<a class="pb mail" href="'+gm(P.thread,P.person)+'" target="_blank" rel="noopener">✉ Thread</a>';
+    h+='<button class="pb tch" onclick="touch(\''+esc(P.person).replace(/'/g,'')+'\')">⌁ Touch</button>';
+    h+='</div></div>';}
+  document.getElementById('gOwe').innerHTML=h;
+  var q=(DATA.quiet||[]).slice().sort(function(a,b){var t={hot:0,warm:1,low:2};return (t[a.tier]-t[b.tier])||(b.days-a.days)});
+  var qh='';var tc={hot:CRA,warm:CEL,low:'#8f8a9a'};
+  for(var i=0;i<q.length;i++){var Q=q[i];var c=tc[Q.tier]||'#8f8a9a';
+    qh+='<div class="pcard glass" style="border-left-color:'+c+'">';
+    qh+='<div class="top"><span class="pname">'+esc(Q.person)+'</span><span class="porg">'+esc(Q.o)+'</span><span class="pmeta"><span class="tierchip" style="background:'+c+'22;color:'+c+';border:1px solid '+c+'55">'+esc(Q.tier)+'</span><br>'+Q.days+'d quiet</span></div>';
+    qh+='<div class="qctx">'+esc(Q.context)+'</div>';
+    qh+='<div class="qtouch">→ '+esc(Q.touch)+'</div>';
+    qh+='<div class="pbtns"><a class="pb mail" href="'+gm(Q.thread,Q.person)+'" target="_blank" rel="noopener">✉ Thread</a><button class="pb tch" onclick="touch(\''+esc(Q.person).replace(/'/g,'')+'\')">⌁ Touch</button></div></div>';}
+  document.getElementById('gQuiet').innerHTML=qh;
+  document.getElementById('sOwed').textContent=people.length;
+  document.getElementById('sQuiet').textContent=q.length;
+  document.getElementById('sTotal').textContent=all.length;
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='';
+}
+(function init(){
+  var tok='';var h=(window.location.hash||'').replace('#','').trim();
+  if(h.length>=32){tok=h;try{localStorage.setItem('cos_token',tok)}catch(e){}}
+  if(!tok){try{tok=localStorage.getItem('cos_token')||''}catch(e){}}
+  if(!tok){tok=(window.prompt('Bridge access key:')||'').trim();if(tok){try{localStorage.setItem('cos_token',tok)}catch(e){}}}
+  if(!tok){document.getElementById('loading').textContent='No access key.';return;}
+  API=API_BASE+tok;
+  document.getElementById('toBridge').href='index.html#'+tok;
+  fetch(API).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){DATA=d;build();}).catch(function(){
+    try{localStorage.removeItem('cos_token')}catch(e){}
+    document.getElementById('loading').textContent='Uplink failed — reload and re-enter your key.';
+  });
+})();
+</script>
+</body>
+</html>
